@@ -77,36 +77,10 @@ public:
   // Pre-condition: The tree must not be empty.
   ValueType max_value() const;
 
-  // Find the minimum node that's greater than the given node.
-  NodeType* successor(NodeType* x) const // TODO
-  {
-    if (x->right != nullptr) {
-      return min_node(x->right);
-    }
-
-    NodeType* y = x->parent;
-    while (y != nullptr && x == y->right) {
-      x = y;
-      y = y->parent;
-    }
-
-    return y;
-  }
-  // Find the maximum node that's smaller than the given node.
-  NodeType* predecessor(NodeType* x) const // TODO
-  {
-    if (x->left != nullptr) {
-      return max_node(x->left);
-    }
-
-    NodeType* y = x->parent;
-    while (y != nullptr && x == y->left) {
-      x = y;
-      y = y->parent;
-    }
-
-    return y;
-  }
+  // Find the minimum node that is greater than the given node.
+  NodeType* successor(NodeType* x) const;
+  // Find the maximum node that is smaller than the given node.
+  NodeType* predecessor(NodeType* x) const;
 
   // Insert x into the red-black tree.
   void insert(const ValueType &x) // TODO
@@ -765,6 +739,41 @@ Tree<T, Compare>::max_node(NodeType* sub_root) const
     sub_root = sub_root->right;
   }
   return sub_root;
+}
+
+// Find the minimum node that is greater than the given node.
+template <class T, class Compare>
+Tree<T, Compare>::NodeType*
+Tree<T, Compare>::successor(NodeType* x) const
+{
+  if (x->right != nullptr) {
+    return min_node(x->right);
+  }
+
+  NodeType* y = x->parent;
+  while (y != nullptr && x == y->right) {
+    x = y;
+    y = y->parent;
+  }
+
+  return y;
+}
+// Find the maximum node that is smaller than the given node.
+template <class T, class Compare>
+Tree<T, Compare>::NodeType*
+Tree<T, Compare>::predecessor(NodeType* x) const
+{
+  if (x->left != nullptr) {
+    return max_node(x->left);
+  }
+
+  NodeType* y = x->parent;
+  while (y != nullptr && x == y->left) {
+    x = y;
+    y = y->parent;
+  }
+
+  return y;
 }
 
 }
