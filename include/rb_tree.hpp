@@ -290,7 +290,6 @@ Tree<T, Compare>::max_node() const
 {
   return max_node(root_node);
 }
-
 // Return the maximum node from a sub-tree.
 template <class T, class Compare>
 Tree<T, Compare>::NodeType*
@@ -311,10 +310,15 @@ template <class T, class Compare>
 Tree<T, Compare>::NodeType*
 Tree<T, Compare>::successor(NodeType* x) const
 {
+  // If x has right node, the minimum node of its right child
+  // is the successor.
   if (x->right != nullptr) {
     return min_node(x->right);
   }
 
+  // If x has no right child, either x is a left child and its
+  // successor is its parent, or x is a right child and its
+  // successor is the minimum parent that has a left child.
   NodeType* y = x->parent;
   while (y != nullptr && x == y->right) {
     x = y;
@@ -328,10 +332,15 @@ template <class T, class Compare>
 Tree<T, Compare>::NodeType*
 Tree<T, Compare>::predecessor(NodeType* x) const
 {
+  // If x has left child, the predecessor is the maximum node
+  // of its left child.
   if (x->left != nullptr) {
     return max_node(x->left);
   }
 
+  // If x has no left child, either x is a right child and its
+  // predecessor is its parent, or x is a left child and its
+  // predecessor is the minimum parent that has a right child.
   NodeType* y = x->parent;
   while (y != nullptr && x == y->left) {
     x = y;
@@ -342,6 +351,11 @@ Tree<T, Compare>::predecessor(NodeType* x) const
 }
 
 // Left rotate.
+//  x               y
+// /\              /\
+// a y     ->     x c 
+//   /\          /\
+//   b c        a b
 template <class T, class Compare>
 void Tree<T, Compare>::left_rotate(NodeType* &sub_root, 
   NodeType* x)
@@ -369,6 +383,11 @@ void Tree<T, Compare>::left_rotate(NodeType* &sub_root,
   x->parent = y;
 }
 // Right rotate.
+// x                y
+// /\              /\
+// a y     <-     x c
+//   /\          /\
+//   b c        a b
 template <class T, class Compare>
 void Tree<T, Compare>::right_rotate(NodeType* &sub_root,
   NodeType* y)
@@ -458,7 +477,10 @@ void Tree<T, Compare>::insert_fix(NodeType* &sub_root, NodeType* node)
   while ((parent = node->parent) && parent->color == red) {
     grand_parent = parent->parent;
 
+    // If the parent is the left child of grand parent.
     if (parent == grand_parent->left) {
+
+      // Case 1: The uncle is red
       NodeType* uncle = grand_parent->right;
       if (uncle && uncle->color == red) {
         uncle->color = black;
@@ -468,15 +490,22 @@ void Tree<T, Compare>::insert_fix(NodeType* &sub_root, NodeType* node)
         continue;
       }
 
+      // Case 2: The uncle is black, and the current node
+      // is a right child.
       if (parent->right == node) {
         left_rotate(sub_root, parent);
         std::swap(parent, node);
       }
 
+      // Case 3: The uncle is black, and the current node
+      // is a left child.
       parent->color = black;
       grand_parent->color = red;
       right_rotate(sub_root, grand_parent);
     } else {
+      // If the parent is the right child of grand parent.
+
+      // Case 1: The uncle is red.
       NodeType* uncle = grand_parent->left;
       if (uncle && uncle->color == red) {
         uncle->color = black;
@@ -486,17 +515,22 @@ void Tree<T, Compare>::insert_fix(NodeType* &sub_root, NodeType* node)
         continue;
       }
 
+      // Case 2: The uncle is black, and the current node
+      // is a left child.
       if (parent->left == node) {
         right_rotate(sub_root, parent);
         std::swap(parent, node);
       }
 
+      // Case 2: The uncle is black, and the current node
+      // is a right child.
       parent->color = black;
       grand_parent->color = red;
       left_rotate(sub_root, grand_parent);
     }
   }
 
+  // Set sub-root to black.
   sub_root->color = black;
 }
 
@@ -518,14 +552,17 @@ void Tree<T, Compare>::remove(NodeType* &sub_root, NodeType* node)
   NodeType* parent;
   NodeColor color;
 
+  // If the deleted node has no NIL child.
   if (node->left != nullptr && node->right != nullptr) {
 
+    // Get the node that is replacing the deleted node.
     NodeType* node_next = node->right;
 
     while (node_next->left != nullptr) {
       node_next = node_next->left;
     }
 
+    // Parameter node is not root node.
     if (node->parent) {
       if (node->parent->left == node) {
         node->parent->left = node_next;
@@ -533,16 +570,25 @@ void Tree<T, Compare>::remove(NodeType* &sub_root, NodeType* node)
         node->parent->right = node_next;
       }
     } else {
+      // Parameter node is root node.
+      // Update it.
       sub_root = node_next;
     }
 
+    // Save the right child of the deleted node
+    // for later adjustments.
     child = node_next->right;
     parent = node_next->parent;
+    // Save the color of next node.
     color = node_next->color;
 
+    // If the deleted node is the parent of the
+    // next node.
     if (parent == node) {
       parent = node_next;
     } else {
+
+      // If child exists.
       if (child) {
         child->parent = parent;
       }
@@ -558,13 +604,16 @@ void Tree<T, Compare>::remove(NodeType* &sub_root, NodeType* node)
     node->left->parent = node_next;
 
   } else {
+    // If the deleted node has NIL children.
 
+    // Save child information for remove fix.
     if (node->left != nullptr) {
       child = node->left;
     } else {
       child = node->right;
     }
 
+    // Save parent and color information for remove fix.
     parent = node->parent;
     color = node->color;
 
@@ -572,6 +621,7 @@ void Tree<T, Compare>::remove(NodeType* &sub_root, NodeType* node)
       child->parent = parent;
     }
 
+    // If deleted node is not root node.
     if (parent) {
       if (parent->left == node) {
         parent->left = child;
@@ -579,11 +629,14 @@ void Tree<T, Compare>::remove(NodeType* &sub_root, NodeType* node)
         parent->right = child;
       }
     } else {
+      // If deleted node is root node.
       sub_root = child;
     }
 
   }
 
+  // If next node is originally black, rebalance the
+  // tree to satisfy the red-black tree requirements.
   if (color == black) {
     remove_fix(sub_root, child, parent);
   }
@@ -597,11 +650,16 @@ void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
 {
   NodeType* temp_node;
 
+  // Exit when two requirements are met:
+  // 1. node is NIL or node is black.
+  // 2. node is not root of the sub-tree.
   while ((!node || node->color == black) && node != sub_root)
   {
     if (parent->left == node) {
       temp_node = parent->right;
       if (temp_node->color == red) {
+
+        // Case 1: The sibling is red.
         temp_node->color = black;
         parent->color = red;
         left_rotate(sub_root, parent);
@@ -610,6 +668,9 @@ void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
       if ((!temp_node->left || temp_node->left->color == black) &&
         (!temp_node->right || temp_node->right->color == black))
       {
+
+        // Case 2: The sibling is black, and the children
+        // of the sibling are all black.
         temp_node->color = red;
         node = parent;
         parent = node->parent;
@@ -617,11 +678,19 @@ void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
         if (!temp_node->right ||
           temp_node->right->color == black)
         {
+
+          // Case 3: The sibling is black. The left child
+          // of the sibling is red and the right child of the
+          // brother is black.
           temp_node->left->color = black;
           temp_node->color = red;
           right_rotate(sub_root, temp_node);
           temp_node = parent->right;
         }
+
+        // Case 4: The sibling is black, and the right child
+        // of the sibling is red. Case 3 is guaranteed to become
+        // case 4.
         temp_node->color = parent->color;
         parent->color = black;
         temp_node->right->color = black;
@@ -631,6 +700,8 @@ void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
       }
     } else {
       temp_node = parent->left;
+      
+      // Case 1: The sibling is red.
       if (temp_node->color == red) {
         temp_node->color = black;
         parent->color = red;
@@ -640,16 +711,26 @@ void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
       if ((!temp_node->left || temp_node->left->color == black) &&
         (!temp_node->right || temp_node->right->color == black))
       {
+
+        // Case 2: The sibling is black, and the children
+        // of the sibling are all black.
         temp_node->color = red;
         node = parent;
         parent = node->parent;
       } else {
         if (!temp_node->left || temp_node->left->color == black) {
+
+          // Case 3: The sibling is black. The left child
+          // of the sibling is red and the right child of the
+          // brother is black.
           temp_node->right->color = black;
           temp_node->color = red;
           left_rotate(sub_root, temp_node);
           temp_node = parent->left;
         }
+
+        // Case 4: The sibling is black, and the right child
+        // of the sibling is red.
         temp_node->color = parent->color;
         parent->color = black;
         temp_node->left->color = black;
@@ -659,6 +740,8 @@ void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
       }
     }
   }
+
+  // Set node color to black.
   if (node) {
     node->color = black;
   }
