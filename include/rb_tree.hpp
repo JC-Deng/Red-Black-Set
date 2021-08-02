@@ -83,77 +83,15 @@ public:
   NodeType* predecessor(NodeType* x) const;
 
   // Insert x into the red-black tree.
-  void insert(const ValueType &x) // TODO
-  {
-    NodeType* new_node = nullptr;
-
-    // If fails to create a new node, return.
-    if ((new_node = new NodeType{black, x,
-      nullptr, nullptr, nullptr}) == nullptr)
-    {
-      return;
-    }
-
-    // Insert the new node into main tree.
-    insert(root_node, new_node);
-  }
-
+  void insert(const ValueType &x);
   // Remove value x from tree if found.
-  void remove(const ValueType &x) // TODO
-  {
-    NodeType* temp_node;
-
-    if ((temp_node = iter_search(x)) != nullptr) {
-      remove(root_node, temp_node);
-    }
-  }
+  void remove(const ValueType &x);
 
   // Destroy the tree.
-  void destroy() // TODO
-  {
-    destroy(root_node);
-  }
+  void destroy();
 
   // Print the tree by rows and show color of each node.
-  void manifest() const // TODO
-  {
-    if (root_node == nullptr) {
-      return;
-    }
-
-    std::vector<NodeType*> current_level;
-    std::vector<NodeType*> next_level;
-    SizeType num_of_level = 0;
-
-    current_level.push_back(root_node);
-    while (!current_level.empty()) {
-      ++num_of_level;
-      for (auto &x : current_level) {
-        // std::cout << x->value << ' ';
-        std::cout << x->value << '/';
-        if (x->color == red) {
-          std::cout << "r ";
-        }
-        if (x->color == black) {
-          std::cout << "b ";
-        }
-      }
-      std::cout << '\n';
-
-      next_level.clear();
-      for (auto &x : current_level) {
-        if (x->left != nullptr) {
-          next_level.push_back(x->left);
-        }
-        if (x->right != nullptr) {
-          next_level.push_back(x->right);
-        }
-      }
-      std::swap(current_level, next_level);
-    }
-    std::cout << '\n';
-    // std::cout << "\nNum of Level: " << num_of_level << '\n';
-  }
+  void manifest() const;
 
   // Validate if the tree still satisfy the requirements of a
   // red-black tree.
@@ -164,7 +102,50 @@ public:
       is_value_correct(root_node);
   }
 
-  // Check if the tree is ordered correctly.
+private:
+
+  // Root node of the red-black tree.
+  NodeType* root_node;
+
+  // Comparator.
+  Compare less_than;
+
+  // Pre-order traversal of a sub-tree.
+  void pre_order(NodeType* sub_root) const;
+  // In-order traversal of a sub-tree.
+  void in_order(NodeType* sub_root) const;
+  // Post-order traversal of a sub-tree.
+  void post_order(NodeType* sub_root) const;
+
+  // Recursive search on sub-tree.
+  NodeType* recur_search(NodeType* sub_root,
+    const ValueType& x) const;
+
+  // Return the minimum node from a sub-tree.
+  NodeType* min_node(NodeType* sub_tree) const;
+  // Return the maximum node from a sub-tree.
+  NodeType* max_node(NodeType* sub_root) const;
+
+  // Left rotate.
+  void left_rotate(NodeType* &sub_root, NodeType* x);
+  // Right rotate.
+  void right_rotate(NodeType* &sub_root, NodeType* y);
+
+  // Insert node into sub-tree.
+  void insert(NodeType* &sub_root, NodeType* node);
+  // Rebalance tree after insert.
+  void insert_fix(NodeType* &sub_root, NodeType* node);
+
+  // Remove a given node from a sub-tree.
+  void remove(NodeType* &sub_root, NodeType* node);
+  // Rebalance tree after remove.
+  void remove_fix(NodeType* &sub_root, NodeType* node,
+    NodeType* parent);
+
+  // Destry sub-tree.
+  void destroy(NodeType* &sub_tree);
+
+    // Check if the tree is ordered correctly.
   // TODO Move to private.
   bool is_value_correct(NodeType* sub_root) const
   {
@@ -246,340 +227,6 @@ public:
     } else {
       return left_height + add;
     }
-  }
-
-private:
-
-  // Root node of the red-black tree.
-  NodeType* root_node;
-
-  // Comparator.
-  Compare less_than;
-
-  // Pre-order traversal of a sub-tree.
-  void pre_order(NodeType* sub_root) const;
-  // In-order traversal of a sub-tree.
-  void in_order(NodeType* sub_root) const;
-  // Post-order traversal of a sub-tree.
-  void post_order(NodeType* sub_root) const;
-
-  // Recursive search on sub-tree.
-  NodeType* recur_search(NodeType* sub_root,
-    const ValueType& x) const;
-
-  // Return the minimum node from a sub-tree.
-  NodeType* min_node(NodeType* sub_tree) const;
-  // Return the maximum node from a sub-tree.
-  NodeType* max_node(NodeType* sub_root) const;
-
-  // Left rotate.
-  // TODO
-  void left_rotate(NodeType* &sub_root, NodeType* x)
-  {
-    NodeType* y = x->right;
-
-    x->right = y->left;
-    if (y->left != nullptr) {
-      y->left->parent = x;
-    }
-
-    y->parent = x->parent;
-
-    if (x->parent == nullptr) {
-      sub_root = y;
-    } else {
-      if (x->parent->left == x) {
-        x->parent->left = y;
-      } else {
-        x->parent->right = y;
-      }
-    }
-
-    y->left = x;
-    x->parent = y;
-  }
-  // Right rotate.
-  // TODO
-  void right_rotate(NodeType* &sub_root, NodeType* y)
-  {
-    NodeType* x = y->left;
-
-    y->left = x->right;
-    if (x->right != nullptr) {
-      x->right->parent = y;
-    }
-
-    x->parent = y->parent;
-
-    if (y->parent == nullptr) {
-      sub_root = x;
-    } else {
-      if (y == y->parent->right) {
-        y->parent->right = x;
-      } else {
-        y->parent->left = x;
-      }
-    }
-
-    x->right = y;
-    y->parent = x;
-  }
-  // Insert node into sub-tree.
-  // TODO
-  void insert(NodeType* &sub_root, NodeType* node)
-  {
-    NodeType* y = nullptr;
-    NodeType* x = sub_root;
-
-    // Regard the red-black tree as a binary search tree,
-    // and add the new node to a binary search tree.
-    while (x != nullptr) {
-      y = x;
-      if (less_than(node->value, y->value)) {
-        x = x->left;
-      } else {
-        x = x->right;
-      }
-    }
-
-    node->parent = y;
-    if (y != nullptr) {
-      if (less_than(node->value, y->value)) {
-        y->left = node;
-      } else {
-        y->right = node;
-      }
-    } else {
-      sub_root = node;
-    }
-
-    // Set node color to red.
-    node->color = red;
-
-    // Fix a sub-tree and make it a binary search tree again.
-    insert_fix(sub_root, node);
-  }
-  // Rebalance tree after insert.
-  // TODO
-  void insert_fix(NodeType* &sub_root, NodeType* node)
-  {
-    NodeType* parent;
-    NodeType* grand_parent;
-
-    // If parent node exists, and it is red.
-    while ((parent = node->parent) && parent->color == red) {
-      grand_parent = parent->parent;
-
-      if (parent == grand_parent->left) {
-        NodeType* uncle = grand_parent->right;
-        if (uncle && uncle->color == red) {
-          uncle->color = black;
-          parent->color = black;
-          grand_parent->color = red;
-          node = grand_parent;
-          continue;
-        }
-
-        if (parent->right == node) {
-          left_rotate(sub_root, parent);
-          std::swap(parent, node);
-        }
-
-        parent->color = black;
-        grand_parent->color = red;
-        right_rotate(sub_root, grand_parent);
-      } else {
-        NodeType* uncle = grand_parent->left;
-        if (uncle && uncle->color == red) {
-          uncle->color = black;
-          parent->color = black;
-          grand_parent->color = red;
-          node = grand_parent;
-          continue;
-        }
-
-        if (parent->left == node) {
-          right_rotate(sub_root, parent);
-          std::swap(parent, node);
-        }
-
-        parent->color = black;
-        grand_parent->color = red;
-        left_rotate(sub_root, grand_parent);
-      }
-    }
-
-    sub_root->color = black;
-  }
-  // Remove a given node from a sub-tree.
-  // TODO
-  void remove(NodeType* &sub_root, NodeType* node)
-  {
-    NodeType* child;
-    NodeType* parent;
-    NodeColor color;
-
-    if (node->left != nullptr && node->right != nullptr) {
-
-      NodeType* node_next = node->right;
-
-      while (node_next->left != nullptr) {
-        node_next = node_next->left;
-      }
-
-      if (node->parent) {
-        if (node->parent->left == node) {
-          node->parent->left = node_next;
-        } else {
-          node->parent->right = node_next;
-        }
-      } else {
-        sub_root = node_next;
-      }
-
-      child = node_next->right;
-      parent = node_next->parent;
-      color = node_next->color;
-
-      if (parent == node) {
-        parent = node_next;
-      } else {
-        if (child) {
-          child->parent = parent;
-        }
-        parent->left = child;
-
-        node_next->right = node->right;
-        node->right->parent = node_next;
-      }
-
-      node_next->parent = node->parent;
-      node_next->color = node->color;
-      node_next->left = node->left;
-      node->left->parent = node_next;
-
-    } else {
-
-      if (node->left != nullptr) {
-        child = node->left;
-      } else {
-        child = node->right;
-      }
-
-      parent = node->parent;
-      color = node->color;
-
-      if (child) {
-        child->parent = parent;
-      }
-
-      if (parent) {
-        if (parent->left == node) {
-          parent->left = child;
-        } else {
-          parent->right = child;
-        }
-      } else {
-        sub_root = child;
-      }
-
-    }
-
-    if (color == black) {
-      remove_fix(sub_root, child, parent);
-    }
-
-    delete node;
-  }
-  // Rebalance tree after remove.
-  // TODO
-  void remove_fix(NodeType* &sub_root,  
-    NodeType* node, NodeType* parent)
-  {
-    NodeType* temp_node;
-
-    while ((!node || node->color == black) && node != sub_root)
-    {
-      if (parent->left == node) {
-        temp_node = parent->right;
-        if (temp_node->color == red) {
-          temp_node->color = black;
-          parent->color = red;
-          left_rotate(sub_root, parent);
-          temp_node = parent->right;
-        }
-        if ((!temp_node->left || temp_node->left->color == black) &&
-          (!temp_node->right || temp_node->right->color == black))
-        {
-          temp_node->color = red;
-          node = parent;
-          parent = node->parent;
-        } else {
-          if (!temp_node->right ||
-            temp_node->right->color == black)
-          {
-            temp_node->left->color = black;
-            temp_node->color = red;
-            right_rotate(sub_root, temp_node);
-            temp_node = parent->right;
-          }
-          temp_node->color = parent->color;
-          parent->color = black;
-          temp_node->right->color = black;
-          left_rotate(sub_root, parent);
-          node = sub_root;
-          break;
-        }
-      } else {
-        temp_node = parent->left;
-        if (temp_node->color == red) {
-          temp_node->color = black;
-          parent->color = red;
-          right_rotate(sub_root, parent);
-          temp_node = parent->left;
-        }
-        if ((!temp_node->left || temp_node->left->color == black) &&
-          (!temp_node->right || temp_node->right->color == black))
-        {
-          temp_node->color = red;
-          node = parent;
-          parent = node->parent;
-        } else {
-          if (!temp_node->left || temp_node->left->color == black) {
-            temp_node->right->color = black;
-            temp_node->color = red;
-            left_rotate(sub_root, temp_node);
-            temp_node = parent->left;
-          }
-          temp_node->color = parent->color;
-          parent->color = black;
-          temp_node->left->color = black;
-          right_rotate(sub_root, parent);
-          node = sub_root;
-          break;
-        }
-      }
-    }
-    if (node) {
-      node->color = black;
-    }
-  }
-
-  // Destry sub-tree.
-  // TODO
-  void destroy(NodeType* &sub_tree)
-  {
-    if (sub_tree == nullptr) {
-      return;
-    }
-    if (sub_tree->left != nullptr) {
-      destroy(sub_tree->left);
-    }
-    if (sub_tree->right != nullptr) {
-      destroy(sub_tree->right);
-    }
-    delete sub_tree;
-    sub_tree = nullptr;
   }
 
 };
@@ -774,6 +421,394 @@ Tree<T, Compare>::predecessor(NodeType* x) const
   }
 
   return y;
+}
+
+// Left rotate.
+template <class T, class Compare>
+void Tree<T, Compare>::left_rotate(NodeType* &sub_root, 
+  NodeType* x)
+{
+  NodeType* y = x->right;
+
+  x->right = y->left;
+  if (y->left != nullptr) {
+    y->left->parent = x;
+  }
+
+  y->parent = x->parent;
+
+  if (x->parent == nullptr) {
+    sub_root = y;
+  } else {
+    if (x->parent->left == x) {
+      x->parent->left = y;
+    } else {
+      x->parent->right = y;
+    }
+  }
+
+  y->left = x;
+  x->parent = y;
+}
+// Right rotate.
+template <class T, class Compare>
+void Tree<T, Compare>::right_rotate(NodeType* &sub_root,
+  NodeType* y)
+{
+  NodeType* x = y->left;
+
+  y->left = x->right;
+  if (x->right != nullptr) {
+    x->right->parent = y;
+  }
+
+  x->parent = y->parent;
+
+  if (y->parent == nullptr) {
+    sub_root = x;
+  } else {
+    if (y == y->parent->right) {
+      y->parent->right = x;
+    } else {
+      y->parent->left = x;
+    }
+  }
+
+  x->right = y;
+  y->parent = x;
+}
+
+// Insert x into the red-black tree.
+template <class T, class Compare>
+void Tree<T, Compare>::insert(const ValueType &x)
+{
+  NodeType* new_node = nullptr;
+
+  // If fails to create a new node, return.
+  if ((new_node = new NodeType{black, x,
+    nullptr, nullptr, nullptr}) == nullptr)
+  {
+    return;
+  }
+
+  // Insert the new node into main tree.
+  insert(root_node, new_node);
+}
+// Insert node into sub-tree.
+template <class T, class Compare>
+void Tree<T, Compare>::insert(NodeType* &sub_root, NodeType* node)
+{
+  NodeType* y = nullptr;
+  NodeType* x = sub_root;
+
+  // Regard the red-black tree as a binary search tree,
+  // and add the new node to a binary search tree.
+  while (x != nullptr) {
+    y = x;
+    if (less_than(node->value, y->value)) {
+      x = x->left;
+    } else {
+      x = x->right;
+    }
+  }
+
+  node->parent = y;
+  if (y != nullptr) {
+    if (less_than(node->value, y->value)) {
+      y->left = node;
+    } else {
+      y->right = node;
+    }
+  } else {
+    sub_root = node;
+  }
+
+  // Set node color to red.
+  node->color = red;
+
+  // Fix a sub-tree and make it a binary search tree again.
+  insert_fix(sub_root, node);
+}
+// Rebalance tree after insert.
+template <class T, class Compare>
+void Tree<T, Compare>::insert_fix(NodeType* &sub_root, NodeType* node)
+{
+  NodeType* parent;
+  NodeType* grand_parent;
+
+  // If parent node exists, and it is red.
+  while ((parent = node->parent) && parent->color == red) {
+    grand_parent = parent->parent;
+
+    if (parent == grand_parent->left) {
+      NodeType* uncle = grand_parent->right;
+      if (uncle && uncle->color == red) {
+        uncle->color = black;
+        parent->color = black;
+        grand_parent->color = red;
+        node = grand_parent;
+        continue;
+      }
+
+      if (parent->right == node) {
+        left_rotate(sub_root, parent);
+        std::swap(parent, node);
+      }
+
+      parent->color = black;
+      grand_parent->color = red;
+      right_rotate(sub_root, grand_parent);
+    } else {
+      NodeType* uncle = grand_parent->left;
+      if (uncle && uncle->color == red) {
+        uncle->color = black;
+        parent->color = black;
+        grand_parent->color = red;
+        node = grand_parent;
+        continue;
+      }
+
+      if (parent->left == node) {
+        right_rotate(sub_root, parent);
+        std::swap(parent, node);
+      }
+
+      parent->color = black;
+      grand_parent->color = red;
+      left_rotate(sub_root, grand_parent);
+    }
+  }
+
+  sub_root->color = black;
+}
+
+// Remove value x from tree if found.
+template <class T, class Compare>
+void Tree<T, Compare>::remove(const ValueType &x)
+{
+  NodeType* temp_node;
+
+  if ((temp_node = iter_search(x)) != nullptr) {
+    remove(root_node, temp_node);
+  }
+}
+// Remove a given node from a sub-tree.
+template <class T, class Compare>
+void Tree<T, Compare>::remove(NodeType* &sub_root, NodeType* node)
+{
+  NodeType* child;
+  NodeType* parent;
+  NodeColor color;
+
+  if (node->left != nullptr && node->right != nullptr) {
+
+    NodeType* node_next = node->right;
+
+    while (node_next->left != nullptr) {
+      node_next = node_next->left;
+    }
+
+    if (node->parent) {
+      if (node->parent->left == node) {
+        node->parent->left = node_next;
+      } else {
+        node->parent->right = node_next;
+      }
+    } else {
+      sub_root = node_next;
+    }
+
+    child = node_next->right;
+    parent = node_next->parent;
+    color = node_next->color;
+
+    if (parent == node) {
+      parent = node_next;
+    } else {
+      if (child) {
+        child->parent = parent;
+      }
+      parent->left = child;
+
+      node_next->right = node->right;
+      node->right->parent = node_next;
+    }
+
+    node_next->parent = node->parent;
+    node_next->color = node->color;
+    node_next->left = node->left;
+    node->left->parent = node_next;
+
+  } else {
+
+    if (node->left != nullptr) {
+      child = node->left;
+    } else {
+      child = node->right;
+    }
+
+    parent = node->parent;
+    color = node->color;
+
+    if (child) {
+      child->parent = parent;
+    }
+
+    if (parent) {
+      if (parent->left == node) {
+        parent->left = child;
+      } else {
+        parent->right = child;
+      }
+    } else {
+      sub_root = child;
+    }
+
+  }
+
+  if (color == black) {
+    remove_fix(sub_root, child, parent);
+  }
+
+  delete node;
+}
+// Rebalance tree after remove.
+template <class T, class Compare>
+void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
+  NodeType* node, NodeType* parent)
+{
+  NodeType* temp_node;
+
+  while ((!node || node->color == black) && node != sub_root)
+  {
+    if (parent->left == node) {
+      temp_node = parent->right;
+      if (temp_node->color == red) {
+        temp_node->color = black;
+        parent->color = red;
+        left_rotate(sub_root, parent);
+        temp_node = parent->right;
+      }
+      if ((!temp_node->left || temp_node->left->color == black) &&
+        (!temp_node->right || temp_node->right->color == black))
+      {
+        temp_node->color = red;
+        node = parent;
+        parent = node->parent;
+      } else {
+        if (!temp_node->right ||
+          temp_node->right->color == black)
+        {
+          temp_node->left->color = black;
+          temp_node->color = red;
+          right_rotate(sub_root, temp_node);
+          temp_node = parent->right;
+        }
+        temp_node->color = parent->color;
+        parent->color = black;
+        temp_node->right->color = black;
+        left_rotate(sub_root, parent);
+        node = sub_root;
+        break;
+      }
+    } else {
+      temp_node = parent->left;
+      if (temp_node->color == red) {
+        temp_node->color = black;
+        parent->color = red;
+        right_rotate(sub_root, parent);
+        temp_node = parent->left;
+      }
+      if ((!temp_node->left || temp_node->left->color == black) &&
+        (!temp_node->right || temp_node->right->color == black))
+      {
+        temp_node->color = red;
+        node = parent;
+        parent = node->parent;
+      } else {
+        if (!temp_node->left || temp_node->left->color == black) {
+          temp_node->right->color = black;
+          temp_node->color = red;
+          left_rotate(sub_root, temp_node);
+          temp_node = parent->left;
+        }
+        temp_node->color = parent->color;
+        parent->color = black;
+        temp_node->left->color = black;
+        right_rotate(sub_root, parent);
+        node = sub_root;
+        break;
+      }
+    }
+  }
+  if (node) {
+    node->color = black;
+  }
+}
+
+// Destroy the tree.
+template <class T, class Compare>
+void Tree<T, Compare>::destroy()
+{
+  destroy(root_node);
+}
+// Destry sub-tree.
+template <class T, class Compare>
+void Tree<T, Compare>::destroy(NodeType* &sub_tree)
+{
+  if (sub_tree == nullptr) {
+    return;
+  }
+  if (sub_tree->left != nullptr) {
+    destroy(sub_tree->left);
+  }
+  if (sub_tree->right != nullptr) {
+    destroy(sub_tree->right);
+  }
+  delete sub_tree;
+  sub_tree = nullptr;
+}
+
+// Print the tree by rows and show color of each node.
+template <class T, class Compare>
+void Tree<T, Compare>::manifest() const
+{
+  if (root_node == nullptr) {
+    return;
+  }
+
+  std::vector<NodeType*> current_level;
+  std::vector<NodeType*> next_level;
+  SizeType num_of_level = 0;
+
+  current_level.push_back(root_node);
+  while (!current_level.empty()) {
+    ++num_of_level;
+    for (auto &x : current_level) {
+      // std::cout << x->value << ' ';
+      std::cout << x->value << '/';
+      if (x->color == red) {
+        std::cout << "r ";
+      }
+      if (x->color == black) {
+        std::cout << "b ";
+      }
+    }
+    std::cout << '\n';
+
+    next_level.clear();
+    for (auto &x : current_level) {
+      if (x->left != nullptr) {
+        next_level.push_back(x->left);
+      }
+      if (x->right != nullptr) {
+        next_level.push_back(x->right);
+      }
+    }
+    std::swap(current_level, next_level);
+  }
+  std::cout << '\n';
+  // std::cout << "\nNum of Level: " << num_of_level << '\n';
 }
 
 }
