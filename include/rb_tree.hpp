@@ -95,12 +95,7 @@ public:
 
   // Validate if the tree still satisfy the requirements of a
   // red-black tree.
-  bool is_valid() const // TODO
-  {
-    return get_black_height(root_node) != -1 &&
-      is_color_correct(root_node) &&
-      is_value_correct(root_node);
-  }
+  bool is_valid() const;
 
 private:
 
@@ -145,89 +140,12 @@ private:
   // Destry sub-tree.
   void destroy(NodeType* &sub_tree);
 
-    // Check if the tree is ordered correctly.
-  // TODO Move to private.
-  bool is_value_correct(NodeType* sub_root) const
-  {
-    if (sub_root == nullptr) {
-      return true;
-    }
-
-    NodeType* start_node = min_node(sub_root);
-    NodeType* next_node = successor(start_node);
-    bool res = true;
-
-    while (next_node != nullptr) {
-      if (!less_than(start_node->value, next_node->value)) {
-        res = false;
-      }
-      start_node = next_node;
-      next_node = successor(next_node);
-    }
-
-    return res;
-  }
-
+  // Check if the tree is ordered correctly.
+  bool is_value_correct(NodeType* sub_root) const;
   // Check if the tree nodes satisfy the color requirement.
-  // TODO Move to private.
-  bool is_color_correct(NodeType* sub_root) const
-  {
-    // If the current node is NIL, there will be no problem.
-    if (sub_root == nullptr) {
-      return true;
-    }
-
-    bool left_check = is_color_correct(sub_root->left);
-    bool right_check = is_color_correct(sub_root->right);
-    bool current_check = false;
-
-    if (sub_root == root_node) {
-      if (sub_root->color == black) {
-        current_check = true;
-      }
-    } else {
-      if (sub_root->color == black) {
-        current_check = true;
-      } else if (sub_root->color == red) {
-        if ((sub_root->left == nullptr ||
-          sub_root->left->color == black) &&
-          (sub_root->right == nullptr ||
-          sub_root->right->color == black))
-        {
-          current_check = true;
-        }
-      }
-    }
-
-    return current_check && left_check && right_check;
-  }
-
+  bool is_color_correct(NodeType* sub_root) const;
   // Check if the tree satisfies the black height property.
-  // TODO Move to private.
- int get_black_height(NodeType* sub_root) const
-  {
-    if (sub_root == nullptr) {
-      return 0;
-    }
-
-    int left_height = get_black_height(sub_root->left);
-    int right_height = get_black_height(sub_root->right);
-    int add;
-    
-    if (sub_root->color == black) {
-      add = 1;
-    } else {
-      add = 0;
-    }
-
-    if (left_height == -1 || right_height == -1 ||
-      left_height != right_height)
-    {
-      return -1;
-    } else {
-      return left_height + add;
-    }
-  }
+  int get_black_height(NodeType* sub_root) const;
 
 };
 
@@ -809,6 +727,98 @@ void Tree<T, Compare>::manifest() const
   }
   std::cout << '\n';
   // std::cout << "\nNum of Level: " << num_of_level << '\n';
+}
+
+// Validate if the tree still satisfy the requirements of a
+// red-black tree.
+template <class T, class Compare>
+bool Tree<T, Compare>::is_valid() const
+{
+  return is_value_correct(root_node) &&
+    is_color_correct(root_node) &&
+    get_black_height(root_node) != -1;
+}
+
+// Check if the tree is ordered correctly.
+template <class T, class Compare>
+bool Tree<T, Compare>::is_value_correct(NodeType* sub_root) const
+{
+  if (sub_root == nullptr) {
+    return true;
+  }
+
+  NodeType* start_node = min_node(sub_root);
+  NodeType* next_node = successor(start_node);
+  bool res = true;
+
+  while (next_node != nullptr) {
+    if (!less_than(start_node->value, next_node->value)) {
+      res = false;
+    }
+    start_node = next_node;
+    next_node = successor(next_node);
+  }
+
+  return res;
+}
+// Check if the tree nodes satisfy the color requirement.
+template <class T, class Compare>
+bool Tree<T, Compare>::is_color_correct(NodeType* sub_root) const
+{
+  // If the current node is NIL, there will be no problem.
+  if (sub_root == nullptr) {
+    return true;
+  }
+
+  bool left_check = is_color_correct(sub_root->left);
+  bool right_check = is_color_correct(sub_root->right);
+  bool current_check = false;
+
+  if (sub_root == root_node) {
+    if (sub_root->color == black) {
+      current_check = true;
+    }
+  } else {
+    if (sub_root->color == black) {
+      current_check = true;
+    } else if (sub_root->color == red) {
+      if ((sub_root->left == nullptr ||
+        sub_root->left->color == black) &&
+        (sub_root->right == nullptr ||
+        sub_root->right->color == black))
+      {
+        current_check = true;
+      }
+    }
+  }
+
+  return current_check && left_check && right_check;
+}
+// Check if the tree satisfies the black height property.
+template <class T, class Compare>
+int Tree<T, Compare>::get_black_height(NodeType* sub_root) const
+{
+  if (sub_root == nullptr) {
+    return 0;
+  }
+
+  int left_height = get_black_height(sub_root->left);
+  int right_height = get_black_height(sub_root->right);
+  int add;
+  
+  if (sub_root->color == black) {
+    add = 1;
+  } else {
+    add = 0;
+  }
+
+  if (left_height == -1 || right_height == -1 ||
+    left_height != right_height)
+  {
+    return -1;
+  } else {
+    return left_height + add;
+  }
 }
 
 }
