@@ -1,0 +1,186 @@
+// ********************************
+// Testing set management commands.
+// ********************************
+
+//
+// Set create test.
+//
+set_create
+set_create
+set_create 1
+set_create 1 2 3
+set_create asdf
+
+//
+// Copy construct/assign tests.
+//
+set_copy 0
+set_copy 0 1
+set_copy 0 1 2
+set_copy 20
+set_copy 20 0
+set_copy_assign 21 22
+set_copy_assign 0 3
+set_copy_assign 1 2
+
+//
+// Move construct/assign tests.
+//
+set_move 0 7
+set_move 6 9
+set_move_assign 1 11
+set_move_assign 12 13
+
+//
+// Set swap test.
+//
+set_insert 2 1
+set_insert 2 2
+set_insert 2 3
+
+set_insert 7 6
+set_insert 7 7
+set_insert 7 8
+
+set_print_all
+set_swap 2 7
+set_print_all
+set_swap 2 8
+set_swap 21 22
+
+//
+// Set equal test.
+//
+set_create 5
+set_copy 2 8
+set_equal 2 8
+set_equal 2 7
+set_equal 2 5
+set_equal 20 2
+set_equal 2 20
+
+//
+// Set destroy test.
+//
+set_destroy 2
+set_destroy 15
+set_destroy_all
+
+
+// ********************************
+// Testing data operation commands.
+// ********************************
+
+//
+// Insert, erase, modify tests.
+//
+set_create 0
+set_insert 1 14
+set_insert 0 13
+set_insert 0 -12
+set_insert 0 -17
+set_erase 1 13
+set_erase 0 1
+set_erase 0 -12
+set_modify 1 123 234
+set_modify 0 -17 -23
+set_modify 0 123 234
+
+//
+// Observer tests.
+//
+set_contains 1 123
+set_contains 0 -17
+set_contains 0 -23
+set_size 2
+set_size 0
+set_print 0
+set_is_empty 2
+set_is_empty 0
+set_clear 2
+set_clear 0
+set_print 0
+set_is_empty 0
+set_size 0
+set_destroy_all
+
+// **************************
+// Iterator related commands.
+// **************************
+
+//
+// Iter get tests.
+//
+set_create 0
+set_insert 0 1
+set_insert 0 2
+set_insert 0 3
+set_insert 0 4
+set_insert 0 5
+set_create 1
+
+iter_get_begin 0 0
+iter_get_begin 0 0
+iter_get_begin 1 1
+iter_get_begin 20 0
+
+iter_get_end 0 0
+iter_get_end 0 2
+iter_get_end 20 0
+
+//
+// Iter move tests.
+//
+iter_get_begin 0 0
+iter_increase 0
+iter_increase 0 5
+iter_increase 0
+iter_increase 20
+iter_increase 20 5
+
+iter_get_end 0 0
+iter_decrease 0
+iter_get_begin 0 0
+iter_increase 0
+iter_decrease 0
+iter_decrease 0 5
+iter_decrease 20
+iter_decrease 20 5
+
+iter_find 20 3 2
+iter_find 0 3 123
+iter_find 0 3 2
+iter_find 0 0 2
+
+//
+// Iter management tests.
+//
+iter_get_end 0 0
+iter_is_end 0
+iter_get_begin 0 0
+iter_is_end 0
+iter_is_end 20
+
+iter_get_end 0 0
+iter_erase 20 0
+iter_erase 0 20
+iter_erase 0 0
+iter_get_begin 0 0
+iter_erase 0 0
+
+iter_discard 20
+iter_discard 0
+
+iter_get_begin 0 0
+iter_get_begin 1 1
+iter_compare 0 20
+iter_compare 20 0
+iter_compare 0 1
+iter_get_end 0 0
+iter_compare 0 1
+
+iter_print 20
+iter_get_end 0 0
+iter_print 0
+iter_get_begin 0 0
+iter_print 0

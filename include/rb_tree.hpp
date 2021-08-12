@@ -45,10 +45,25 @@ public:
   // An unsigned integral type used to represent sizes.
   using SizeType = std::size_t;
 
+  // The type of the nodes of the tree.
   using NodeType = TreeNode<ValueType>;
 
   // Constructor.
   Tree() : root_node(nullptr) {}
+  Tree(Tree&& other)
+  {
+    root_node = other.root_node;
+    less_than = other.less_than;
+    other.root_node = nullptr;
+  }
+  Tree& operator=(Tree&& other)
+  {
+    destroy();
+    root_node = other.root_node;
+    less_than = other.less_than;
+    other.root_node = nullptr;
+    return *this;
+  }
   // Destructor.
   ~Tree() {
     destroy();
@@ -65,35 +80,42 @@ public:
   NodeType* recur_search(const ValueType& x) const;
   // Non-recursive search.
   NodeType* iter_search(const ValueType& x) const;
+  // Alias of non-recursive search.
+  // Search method of choice can be set here.
+  NodeType* find(const ValueType& x) const;
 
-  // Find the node with minimum value.
+  // Finds the node with minimum value.
   NodeType* min_node() const;
-  // Find the minimum value.
+  // Finds the minimum value.
   // Pre-condition: The tree must not be empty.
   ValueType min_value() const;
-  // Find the node with maximum value.
+  // Finds the node with maximum value.
   NodeType* max_node() const;
-  // Find the maximum value.
+  // Finds the maximum value.
   // Pre-condition: The tree must not be empty.
   ValueType max_value() const;
 
-  // Find the minimum node that is greater than the given node.
+  // Finds the minimum node that is greater than the given node.
   NodeType* successor(NodeType* x) const;
-  // Find the maximum node that is smaller than the given node.
+  // Finds the maximum node that is smaller than the given node.
   NodeType* predecessor(NodeType* x) const;
 
-  // Insert x into the red-black tree.
+  // Inserts x into the red-black tree.
   void insert(const ValueType &x);
-  // Remove value x from tree if found.
+  // Removes value x from tree if found.
   void remove(const ValueType &x);
+  // Returns the size of the tree.
+  SizeType size() const;
+  // Returns the size of the sub tree.
+  SizeType size(NodeType* sub_root) const;
 
-  // Destroy the tree.
+  // Destroys the tree.
   void destroy();
 
-  // Print the tree by rows and show color of each node.
+  // Prints the tree by rows and show color of each node.
   void manifest() const;
 
-  // Validate if the tree still satisfy the requirements of a
+  // Validates if the tree still satisfy the requirements of a
   // red-black tree.
   bool is_valid() const;
 
@@ -116,9 +138,9 @@ private:
   NodeType* recur_search(NodeType* sub_root,
     const ValueType& x) const;
 
-  // Return the minimum node from a sub-tree.
+  // Returns the minimum node from a sub-tree.
   NodeType* min_node(NodeType* sub_tree) const;
-  // Return the maximum node from a sub-tree.
+  // Returns the maximum node from a sub-tree.
   NodeType* max_node(NodeType* sub_root) const;
 
   // Left rotate.
@@ -126,26 +148,29 @@ private:
   // Right rotate.
   void right_rotate(NodeType* &sub_root, NodeType* y);
 
-  // Insert node into sub-tree.
+  // Inserts node into sub-tree.
   void insert(NodeType* &sub_root, NodeType* node);
-  // Rebalance tree after insert.
+  // Rebalances tree after insert.
   void insert_fix(NodeType* &sub_root, NodeType* node);
 
-  // Remove a given node from a sub-tree.
+  // Removes a given node from a sub-tree.
   void remove(NodeType* &sub_root, NodeType* node);
-  // Rebalance tree after remove.
+  // Rebalances tree after remove.
   void remove_fix(NodeType* &sub_root, NodeType* node,
     NodeType* parent);
 
-  // Destry sub-tree.
+  // Destrys sub-tree.
   void destroy(NodeType* &sub_tree);
 
-  // Check if the tree is ordered correctly.
+  // Checks if the tree is ordered correctly.
   bool is_value_correct(NodeType* sub_root) const;
-  // Check if the tree nodes satisfy the color requirement.
+  // Checks if the tree nodes satisfy the color requirement.
   bool is_color_correct(NodeType* sub_root) const;
-  // Check if the tree satisfies the black height property.
+  // Checks if the tree satisfies the black height property.
   int get_black_height(NodeType* sub_root) const;
+
+  // Makes rb::set a friend class of rb::tree.
+  template <class Key, class OtherCompare> friend class set;
 
 };
 
@@ -205,19 +230,19 @@ void Tree<T, Compare>::post_order(NodeType* sub_root) const
 
 // Recursive search.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::recur_search(const ValueType& x) const
 {
   return recur_search(root_node, x);
 }
 // Recursive search on a sub-tree.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::recur_search(NodeType* sub_root,
   const ValueType& x) const
 {
   if (sub_root == nullptr || sub_root->value == x) {
-    return x;
+    return sub_root;
   }
 
   if (less_than(x, sub_root->value)) {
@@ -229,7 +254,7 @@ Tree<T, Compare>::recur_search(NodeType* sub_root,
 
 // Non-recursive search.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::iter_search(const ValueType& x) const
 {
   NodeType* search_node = root_node;
@@ -245,24 +270,33 @@ Tree<T, Compare>::iter_search(const ValueType& x) const
   return search_node;
 }
 
-// Find the minimum value.
+// Alias of non-recursive search.
+// Search method of choice can be set here.
+template <class T, class Compare>
+typename Tree<T, Compare>::NodeType*
+Tree<T, Compare>::find(const ValueType& x) const
+{
+  return iter_search(x);
+}
+
+// Finds the minimum value.
 // Pre-condition: The tree must not be empty.
 template <class T, class Compare>
-Tree<T, Compare>::ValueType
+typename Tree<T, Compare>::ValueType
 Tree<T, Compare>::min_value() const
 {
   return min_node()->value;
 }
-// Find the node with minimum value.
+// Finds the node with minimum value.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::min_node() const
 {
   return min_node(root_node);
 }
-// Return the minimum node from a sub-tree.
+// Returns the minimum node from a sub-tree.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::min_node(NodeType* sub_tree) const
 {
   if (sub_tree == nullptr) {
@@ -275,24 +309,24 @@ Tree<T, Compare>::min_node(NodeType* sub_tree) const
   return sub_tree;
 }
 
-// Find the maximum value.
+// Finds the maximum value.
 // Pre-condition: The tree must not be empty.
 template <class T, class Compare>
-Tree<T, Compare>::ValueType
+typename Tree<T, Compare>::ValueType
 Tree<T, Compare>::max_value() const
 {
   return max_node()->value;
 }
-// Find the node with maximum value.
+// Finds the node with maximum value.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::max_node() const
 {
   return max_node(root_node);
 }
-// Return the maximum node from a sub-tree.
+// Returns the maximum node from a sub-tree.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::max_node(NodeType* sub_root) const
 {
   if (sub_root == nullptr) {
@@ -305,9 +339,9 @@ Tree<T, Compare>::max_node(NodeType* sub_root) const
   return sub_root;
 }
 
-// Find the minimum node that is greater than the given node.
+// Finds the minimum node that is greater than the given node.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::successor(NodeType* x) const
 {
   // If x has right node, the minimum node of its right child
@@ -327,9 +361,9 @@ Tree<T, Compare>::successor(NodeType* x) const
 
   return y;
 }
-// Find the maximum node that is smaller than the given node.
+// Finds the maximum node that is smaller than the given node.
 template <class T, class Compare>
-Tree<T, Compare>::NodeType*
+typename Tree<T, Compare>::NodeType*
 Tree<T, Compare>::predecessor(NodeType* x) const
 {
   // If x has left child, the predecessor is the maximum node
@@ -351,11 +385,12 @@ Tree<T, Compare>::predecessor(NodeType* x) const
 }
 
 // Left rotate.
-//  x               y
-// /\              /\
-// a y     ->     x c 
-//   /\          /\
-//   b c        a b
+//    /               /
+//   x               y
+//  /\              /\
+// a  y     ->     x  c
+//    /\          /\
+//   b  c        a  b
 template <class T, class Compare>
 void Tree<T, Compare>::left_rotate(NodeType* &sub_root, 
   NodeType* x)
@@ -383,11 +418,12 @@ void Tree<T, Compare>::left_rotate(NodeType* &sub_root,
   x->parent = y;
 }
 // Right rotate.
-// x                y
-// /\              /\
-// a y     <-     x c
-//   /\          /\
-//   b c        a b
+//    /               /
+//   x               y
+//  /\              /\
+// a  y     <-     x  c
+//    /\          /\
+//   b  c        a  b
 template <class T, class Compare>
 void Tree<T, Compare>::right_rotate(NodeType* &sub_root,
   NodeType* y)
@@ -415,7 +451,7 @@ void Tree<T, Compare>::right_rotate(NodeType* &sub_root,
   y->parent = x;
 }
 
-// Insert x into the red-black tree.
+// Inserts x into the red-black tree.
 template <class T, class Compare>
 void Tree<T, Compare>::insert(const ValueType &x)
 {
@@ -431,7 +467,7 @@ void Tree<T, Compare>::insert(const ValueType &x)
   // Insert the new node into main tree.
   insert(root_node, new_node);
 }
-// Insert node into sub-tree.
+// Inserts node into sub-tree.
 template <class T, class Compare>
 void Tree<T, Compare>::insert(NodeType* &sub_root, NodeType* node)
 {
@@ -466,7 +502,7 @@ void Tree<T, Compare>::insert(NodeType* &sub_root, NodeType* node)
   // Fix a sub-tree and make it a binary search tree again.
   insert_fix(sub_root, node);
 }
-// Rebalance tree after insert.
+// Rebalances tree after insert.
 template <class T, class Compare>
 void Tree<T, Compare>::insert_fix(NodeType* &sub_root, NodeType* node)
 {
@@ -487,6 +523,8 @@ void Tree<T, Compare>::insert_fix(NodeType* &sub_root, NodeType* node)
         parent->color = black;
         grand_parent->color = red;
         node = grand_parent;
+
+        // Case 1 doesn't transform to other cases. Continue.
         continue;
       }
 
@@ -512,6 +550,8 @@ void Tree<T, Compare>::insert_fix(NodeType* &sub_root, NodeType* node)
         parent->color = black;
         grand_parent->color = red;
         node = grand_parent;
+        
+        // Case 1 doesn't transform to other cases. Continue.
         continue;
       }
 
@@ -534,7 +574,7 @@ void Tree<T, Compare>::insert_fix(NodeType* &sub_root, NodeType* node)
   sub_root->color = black;
 }
 
-// Remove value x from tree if found.
+// Removes value x from tree if found.
 template <class T, class Compare>
 void Tree<T, Compare>::remove(const ValueType &x)
 {
@@ -544,7 +584,7 @@ void Tree<T, Compare>::remove(const ValueType &x)
     remove(root_node, temp_node);
   }
 }
-// Remove a given node from a sub-tree.
+// Removes a given node from a sub-tree.
 template <class T, class Compare>
 void Tree<T, Compare>::remove(NodeType* &sub_root, NodeType* node)
 {
@@ -643,7 +683,7 @@ void Tree<T, Compare>::remove(NodeType* &sub_root, NodeType* node)
 
   delete node;
 }
-// Rebalance tree after remove.
+// Rebalances tree after remove.
 template <class T, class Compare>
 void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
   NodeType* node, NodeType* parent)
@@ -746,14 +786,35 @@ void Tree<T, Compare>::remove_fix(NodeType* &sub_root,
     node->color = black;
   }
 }
+// Returns the size of the tree.
+template <class T, class Compare>
+typename Tree<T, Compare>::SizeType
+Tree<T, Compare>::size() const
+{
+  return size(root_node);
+}
+// Returns the size of the sub tree.
+template <class T, class Compare>
+typename Tree<T, Compare>::SizeType
+Tree<T, Compare>::size(NodeType* sub_root) const
+{
+  if (sub_root == nullptr) {
+    return 0;
+  }
 
-// Destroy the tree.
+  SizeType left_size = size(sub_root->left);
+  SizeType right_size = size(sub_root->right);
+
+  return left_size + right_size + 1;
+}
+
+// Destroys the tree.
 template <class T, class Compare>
 void Tree<T, Compare>::destroy()
 {
   destroy(root_node);
 }
-// Destry sub-tree.
+// Destrys sub-tree.
 template <class T, class Compare>
 void Tree<T, Compare>::destroy(NodeType* &sub_tree)
 {
@@ -770,7 +831,7 @@ void Tree<T, Compare>::destroy(NodeType* &sub_tree)
   sub_tree = nullptr;
 }
 
-// Print the tree by rows and show color of each node.
+// Prints the tree by rows and show color of each node.
 template <class T, class Compare>
 void Tree<T, Compare>::manifest() const
 {
@@ -812,7 +873,7 @@ void Tree<T, Compare>::manifest() const
   // std::cout << "\nNum of Level: " << num_of_level << '\n';
 }
 
-// Validate if the tree still satisfy the requirements of a
+// Validates if the tree still satisfy the requirements of a
 // red-black tree.
 template <class T, class Compare>
 bool Tree<T, Compare>::is_valid() const
@@ -822,7 +883,7 @@ bool Tree<T, Compare>::is_valid() const
     get_black_height(root_node) != -1;
 }
 
-// Check if the tree is ordered correctly.
+// Checks if the tree is ordered correctly.
 template <class T, class Compare>
 bool Tree<T, Compare>::is_value_correct(NodeType* sub_root) const
 {
@@ -844,7 +905,7 @@ bool Tree<T, Compare>::is_value_correct(NodeType* sub_root) const
 
   return res;
 }
-// Check if the tree nodes satisfy the color requirement.
+// Checks if the tree nodes satisfy the color requirement.
 template <class T, class Compare>
 bool Tree<T, Compare>::is_color_correct(NodeType* sub_root) const
 {
@@ -877,7 +938,7 @@ bool Tree<T, Compare>::is_color_correct(NodeType* sub_root) const
 
   return current_check && left_check && right_check;
 }
-// Check if the tree satisfies the black height property.
+// Checks if the tree satisfies the black height property.
 template <class T, class Compare>
 int Tree<T, Compare>::get_black_height(NodeType* sub_root) const
 {

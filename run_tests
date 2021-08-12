@@ -1,0 +1,19 @@
+#! /usr/bin/env bash
+
+if [ $# -ne 1 ]; then
+	echo "binary directory not specified"
+	exit 1
+fi
+
+bin_dir="$1"
+
+# Run each executable once.
+program="$bin_dir/test_rb_tree"
+"$program" -n 10
+
+program="$bin_dir/test_rb_set"
+"$program" -n 10
+
+program="$bin_dir/script_intpr"
+file_dir="$bin_dir/demo_script.txt"
+"$program" "$file_dir"
